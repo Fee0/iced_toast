@@ -1,0 +1,12 @@
+[package]
+name = "iced_toast"
+version = "0.1.0"
+edition = "2024"
+description = "Iced toast notifications: level-coloured cards with an icon, a close button and a duration bar"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+iced = { version = "0.14", features = ["svg"] }
+
+[dev-dependencies]
+iced = { version = "0.14", features = ["svg"] }
