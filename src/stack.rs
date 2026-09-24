@@ -46,9 +46,9 @@ const CARD_SPACING: f32 = 12.0;
 const TEXT_SPACING: f32 = 3.0;
 
 const ICON_BADGE_SIZE: f32 = 34.0;
-const ICON_SIZE: f32 = 17.0;
+const ICON_SIZE: f32 = 22.0;
 const CLOSE_BUTTON_SIZE: f32 = 28.0;
-const CLOSE_ICON_SIZE: f32 = 13.0;
+const CLOSE_ICON_SIZE: f32 = 17.0;
 const CLOSE_CORNER_RADIUS: f32 = 6.0;
 
 /// Thickness of the duration bar along the bottom edge.

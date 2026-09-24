@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-<path fill="currentColor" d="M18.3 5.71L12 12.01 5.7 5.71 4.29 7.12l6.3 6.3-6.3 6.3 1.41 1.41 6.3-6.3 6.3 6.3 1.41-1.41-6.3-6.3 6.3-6.3z"/>
+<path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M7.2 7.2 16.8 16.8M16.8 7.2 7.2 16.8"/>
 </svg>
