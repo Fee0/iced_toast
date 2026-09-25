@@ -5,6 +5,9 @@
 //!
 //! Timing stays with the caller, who holds a [`Timer`] per raised toast: it hands
 //! [`Toast::progress`] the fraction of the lifetime that is left and says when the toast is over.
+//! A card wired with [`Toast::on_hover`] reports the mouse arriving and leaving, so that timer can
+//! stand still while the toast is being read — which it does unless told
+//! [`Timer::pause_on_hover`] `false`.
 
 pub mod stack;
 pub mod timer;

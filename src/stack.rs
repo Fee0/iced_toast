@@ -11,8 +11,8 @@ use std::rc::Rc;
 use std::sync::LazyLock;
 
 use iced::widget::{
-    Button, Column, Container, ProgressBar, Row, Svg, Text, button, container, progress_bar, svg,
-    text,
+    Button, Column, Container, MouseArea, ProgressBar, Row, Svg, Text, button, container,
+    progress_bar, svg, text,
 };
 use iced::{Alignment, Border, Color, Element, Font, Length, Padding, font};
 
@@ -252,6 +252,8 @@ where
         title,
         body,
         progress,
+        duration_bar: show_duration_bar,
+        on_hover,
         on_close,
     } = toast;
 
@@ -287,11 +289,13 @@ where
 
     let mut content = Column::new().push(Container::new(row).padding(CARD_PADDING));
 
-    if let Some(progress) = progress {
+    // A toast whose bar is turned off still runs on the application's timer; it just doesn't draw
+    // the line.
+    if let Some(progress) = progress.filter(|_| show_duration_bar) {
         content = content.push(duration_bar(progress, level, Rc::clone(&class)));
     }
 
-    Container::new(content)
+    let card: Element<'a, Message, Theme> = Container::new(content)
         .width(width)
         .clip(true)
         .style(move |theme: &Theme| {
@@ -305,7 +309,15 @@ where
                 snap: true,
             }
         })
-        .into()
+        .into();
+
+    let Some((entered, left)) = on_hover else {
+        return card;
+    };
+
+    // Only the arriving and the leaving are wired, and a mouse area captures nothing it was not
+    // given a use for: presses still reach the close button and the application under the stack.
+    MouseArea::new(card).on_enter(entered).on_exit(left).into()
 }
 
 fn badge<'a, Message, Theme>(

@@ -2,7 +2,7 @@
 
 use std::time::Instant;
 
-use iced::widget::{button, column, row, text};
+use iced::widget::{button, checkbox, column, row, text};
 use iced::{Element, Length, Subscription, Theme, window};
 use iced_toast::{Anchor, Level, Timer, Toast};
 
@@ -18,6 +18,9 @@ pub fn main() -> iced::Result {
 enum Message {
     Raise(Level),
     Dismiss(usize),
+    Hover(usize, bool),
+    ToggleDurationBar(bool),
+    TogglePauseOnHover(bool),
     Tick,
 }
 
@@ -38,10 +41,26 @@ impl Raised {
     }
 }
 
-#[derive(Default)]
 struct Demo {
     raised: Vec<Raised>,
     next_id: usize,
+    /// The line is only the reporting of the countdown, so turning it off changes nothing about
+    /// when a toast goes — the timers below run either way.
+    duration_bar: bool,
+    /// Read by [`Timer::pause_on_hover`] as a toast is raised, so it applies to the next one up
+    /// rather than to the ones already on screen.
+    pause_on_hover: bool,
+}
+
+impl Default for Demo {
+    fn default() -> Self {
+        Self {
+            raised: Vec::new(),
+            next_id: 0,
+            duration_bar: true,
+            pause_on_hover: true,
+        }
+    }
 }
 
 impl Demo {
@@ -51,11 +70,30 @@ impl Demo {
                 self.raised.push(Raised {
                     id: self.next_id,
                     level,
-                    timer: (level != Level::Error).then(Timer::new),
+                    timer: (level != Level::Error)
+                        .then(|| Timer::new().pause_on_hover(self.pause_on_hover)),
                 });
                 self.next_id += 1;
             }
             Message::Dismiss(id) => self.raised.retain(|raised| raised.id != id),
+            Message::Hover(id, hovered) => {
+                let now = Instant::now();
+
+                if let Some(timer) = self
+                    .raised
+                    .iter_mut()
+                    .find(|raised| raised.id == id)
+                    .and_then(|raised| raised.timer.as_mut())
+                {
+                    if hovered {
+                        timer.hold(now);
+                    } else {
+                        timer.release(now);
+                    }
+                }
+            }
+            Message::ToggleDurationBar(show) => self.duration_bar = show,
+            Message::TogglePauseOnHover(pause) => self.pause_on_hover = pause,
             Message::Tick => {
                 let now = Instant::now();
                 self.raised.retain(|raised| !raised.is_expired(now));
@@ -73,9 +111,22 @@ impl Demo {
         }))
         .spacing(10);
 
+        let bar_toggle = checkbox(self.duration_bar)
+            .label("Duration bar")
+            .on_toggle(Message::ToggleDurationBar);
+
+        let hover_toggle = checkbox(self.pause_on_hover)
+            .label("Keep open while hovered")
+            .on_toggle(Message::TogglePauseOnHover);
+
         let toasts = iced_toast::Stack::new(self.raised.iter().map(|raised| {
             let mut toast = Toast::new(raised.level, label(raised.level))
                 .body(body(raised.level))
+                .duration_bar(self.duration_bar)
+                .on_hover(
+                    Message::Hover(raised.id, true),
+                    Message::Hover(raised.id, false),
+                )
                 .on_close(Message::Dismiss(raised.id));
 
             if let Some(remaining) = raised.remaining(now) {
@@ -87,7 +138,8 @@ impl Demo {
         .anchor(Anchor::BottomRight);
 
         iced::widget::stack![
-            column![buttons]
+            column![buttons, bar_toggle, hover_toggle]
+                .spacing(12)
                 .padding(20)
                 .width(Length::Fill)
                 .height(Length::Fill),
